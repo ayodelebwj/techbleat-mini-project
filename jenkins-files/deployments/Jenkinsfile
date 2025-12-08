@@ -1,0 +1,120 @@
+pipeline {
+    agent any
+    
+    environment {
+        AWS_ACCESS_KEY_ID = credentials ('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials ('aws-secret-access-key')
+        AWS_DEFAULT_REGION = 'us-east-2'
+    }
+
+    parameters {
+        choice {
+        name: 'DEPLOYMENT',
+        choices: ['WEB APP NGINX', 'JAVA APP', 'PYTHON APP'],
+        description: 'Select App To Deploy'
+    }
+
+    }
+
+    stages {
+        stage ('Deploy Web App Nginx') {
+        when {
+            expression {params.TF_ACTION == 'WEB APP NGINX'}
+        }
+            steps {
+                 sshagent (credentials: ['AWS-SSH-KEY']) {
+                sh """
+                ssh -o StrictHostKeyChecking=no ubuntu@PRIVATE WEB VM IP NEEDED HERE 'cd ~ ;
+                sudo apt install nginx -y ; 
+                sudo systemctl daemon-reload ;
+                sudo systemctl enable nginx ;
+                sudo systemctl start nginx ;
+                sudo rm -rf fruits-veg_market ;
+                git clone https://github.com/techbleat/fruits-veg_market.git ;
+                cd ~/fruits-veg_market/web ;
+                JAVA_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=java-instance" \
+                --query "Reservations[0].Instances[0].PublicIpAddress" \
+                --output text);
+                sed -i "s|http://VEG_MACHINE:8080|http://$JAVA_INSTANCE_PUBLIC_IP:9090|g" index.html;
+                PYTHON_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
+                --query "Reservations[0].Instances[0].PublicIpAddress" \
+                --output text);
+                sed -i "s|http://localhostFRUIT_MACHINE:9000|http://$PYTHON_INSTANCE_PUBLIC_IP:8080|g" index.html;
+                sudo cp ~/fruits-veg_market/web/index.html /var/www/html/index.html'
+                """
+                 }
+            }
+        }
+
+        stage ('Deploy Java App') {
+        when {
+            expression {params.TF_ACTION == 'JAVA APP'}
+        }
+            steps {
+                 sshagent (credentials: ['AWS-SSH-KEY']) {
+                sh """
+                ssh -o StrictHostKeyChecking=no ubuntu@PRIVATE WEB VM IP NEEDED HERE 
+                'sudo cp vegetables.service /etc/systemd/system/vegetables.service;
+                cd ~ ;
+                sudo rm -rf fruits-veg_market ;
+                git clone https://github.com/techbleat/fruits-veg_market.git ;
+                sudo systemctl daemon-reload ;
+                sudo systemctl enable vegetables.service ;
+                sudo systemctl restart vegetables.service ;
+                """
+                 }
+            }
+
+        }
+
+        stage ('Deploy Python App') {
+        when {
+            expression {params.TF_ACTION == 'PYTHON APP'}
+        }
+            steps {
+                 sshagent (credentials: ['AWS-SSH-KEY']) {
+                sh """
+                ssh -o StrictHostKeyChecking=no ubuntu@PRIVATE WEB VM IP NEEDED HERE 
+                'sudo cp fruits.service /etc/systemd/system/fruits.service;
+                cd ~ ;
+                sudo rm -rf fruits-veg_market ;
+                git clone https://github.com/techbleat/fruits-veg_market.git ;
+                cd ~/fruits-veg_market/python;
+                python3 -m venv .venv;
+                source .venv/bin/activate;
+                python -m pip install -r requirements.txt;
+                sudo systemctl daemon-reload ;
+                sudo systemctl enable fruits.service ;
+                sudo systemctl restart fruits.service ;
+                """
+                 }
+            }
+
+        }
+    }
+
+    post {
+        success {
+            echo 'App deployed successfully'
+        }
+
+        failed {
+            echo 'App deployedment failed'
+        }
+    }
+
+
+}
+
+
+  JAVA_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=java-instance" \
+  --query "Reservations[0].Instances[0].PublicIpAddress" \
+  --output text);
+
+  sed -i "s|http://localhost:9000|http://$JAVA_INSTANCE_PUBLIC_IP:9090|g" index.html;
+
+  PYTHON_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
+  --query "Reservations[0].Instances[0].PublicIpAddress" \
+  --output text);
+
+  sed -i "s|http://localhost:9000|http://$PYTHON_INSTANCE_PUBLIC_IP:8080|g" index.html;
