@@ -22,7 +22,7 @@ pipeline {
     stages {
         stage ('Get target machines ip addresses') {
         when {
-            expression {pararms.TF_ACTION == 'GET_TARGET_MACHINES_IP_ADDRESSES'}
+            expression {params.TF_ACTION == 'GET_TARGET_MACHINES_IP_ADDRESSES'}
         }
             steps {
                 sh '''
@@ -61,11 +61,11 @@ pipeline {
                 sudo systemctl enable nginx ;
                 sudo systemctl start nginx ;
                 sudo rm -rf fruits-veg_market ;
+                cd ~;
                 git clone https://github.com/techbleat/fruits-veg_market.git ;
                 cd ~/fruits-veg_market/web ;
                 sed -i "s|http://VEG_MACHINE:8080|http://${env.JAVA_INSTANCE_PUBLIC_IP}:8080|g" index.html;
                 sed -i "s|http://FRUIT_MACHINE:9000|http://${env.PYTHON_INSTANCE_PUBLIC_IP}:9000|g" index.html;
-
                 sudo cp ~/fruits-veg_market/web/index.html /var/www/html/index.html'
                 '''
                  }
@@ -83,6 +83,7 @@ pipeline {
                 'sudo cp vegetables.service /etc/systemd/system/vegetables.service;
                 cd ~ ;
                 sudo rm -rf fruits-veg_market ;
+                cd ~;
                 git clone https://github.com/techbleat/fruits-veg_market.git ;
                 sudo systemctl daemon-reload ;
                 sudo systemctl enable vegetables.service ;
@@ -100,7 +101,7 @@ pipeline {
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
                 sh """
-                ssh -o StrictHostKeyChecking=no ubuntu@PRIVATE WEB VM IP NEEDED HERE 
+                ssh -o StrictHostKeyChecking=no ubuntu@${env.PYTHON_INSTANCE_PUBLIC_IP} 
                 'sudo cp fruits.service /etc/systemd/system/fruits.service;
                 cd ~ ;
                 sudo rm -rf fruits-veg_market ;
@@ -125,7 +126,7 @@ pipeline {
         }
 
         failure {
-            echo 'App deployedment failed'
+            echo 'App deployment failed'
         }
     }
 
