@@ -26,20 +26,20 @@ pipeline {
         }
             steps {
                 sh '''
-                web-instance-private-ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=web-instance" \
+                web_instance_private_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=web-instance" \
                 --query "Reservations[0].Instances[0].PrivateIpAddress" \
                 --output text);
-                env.WEB_INSTANCE_PRIVATE_IP = ${web-instance-private-ip};
+                env.WEB_INSTANCE_PRIVATE_IP = ${web_instance_private_ip};
 
-                java-instance-public-ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=java-instance" \
+                java_instance_public_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=java-instance" \
                 --query "Reservations[0].Instances[0].PublicIpAddress" \
                 --output text);
-                env.JAVA_INSTANCE_PUBLIC_IP = ${java-instance-public-ip};
+                env.JAVA_INSTANCE_PUBLIC_IP = ${java_instance_public_ip};
 
-                python-instance-public-ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
+                python_instance_public_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
                 --query "Reservations[0].Instances[0].PublicIpAddress" \
                 --output text);
-                env.PYTHON_INSTANCE_PUBLIC_IP = ${python-instance-public-ip};
+                env.PYTHON_INSTANCE_PUBLIC_IP = ${python_instance_public_ip};
                 '''
             }
         }
@@ -79,7 +79,7 @@ pipeline {
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
                 sh """
-                ssh -o StrictHostKeyChecking=no ubuntu@PRIVATE WEB VM IP NEEDED HERE 
+                ssh -o StrictHostKeyChecking=no ubuntu@${env.JAVA_INSTANCE_PUBLIC_IP} 
                 'sudo cp vegetables.service /etc/systemd/system/vegetables.service;
                 cd ~ ;
                 sudo rm -rf fruits-veg_market ;
