@@ -27,7 +27,7 @@ pipeline {
                  sh 'packer init .'
                  sh 'packer fmt .'
                  sh 'packer validate .'
-                 sh 'packer build web.pkr.hcl'
+                 sh 'packer build nginx-web.pkr.hcl'
                 }
             }
 
