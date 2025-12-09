@@ -22,6 +22,7 @@ pipeline {
             expression {params.TF_ACTION == 'WEB_AMI'}
         }
             steps {
+
                  sh 'ls -ltr'
                  sh 'packer fmt .'
                  sh 'packer validate .'
@@ -35,12 +36,13 @@ pipeline {
             expression {params.TF_ACTION == 'JAVA_AMI'}
         }
             steps {
+                dir ('../../packer-ami/') {
                  sh 'ls -ltr'
                  sh 'packer fmt .'
                  sh 'packer validate .'
                  sh 'packer build java.pkr.hcl'
+               }
             }
-
         }
 
         stage ('Create Python AMI') {
