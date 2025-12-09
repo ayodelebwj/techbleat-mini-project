@@ -27,9 +27,9 @@ pipeline {
                 --query "Reservations[0].Instances[0].PrivateIpAddress" \
                 --output text);
                 ssh -o StrictHostKeyChecking=no ubuntu@$WEB_INSTANCE_PRIVATE_IP 'cd ~ ;
-                export ${env.AWS_ACCESS_KEY_ID}
-                export ${env.AWS_SECRET_ACCESS_KEY}
-                export ${env.AWS_DEFAULT_REGION}
+                export ${env.AWS_ACCESS_KEY_ID};
+                export ${env.AWS_SECRET_ACCESS_KEY};
+                export ${env.AWS_DEFAULT_REGION};
                 sudo apt install nginx -y ; 
                 sudo systemctl daemon-reload ;
                 sudo systemctl enable nginx ;
@@ -64,7 +64,7 @@ pipeline {
                 git clone https://github.com/techbleat/fruits-veg_market.git ;
                 sudo systemctl daemon-reload ;
                 sudo systemctl enable vegetables.service ;
-                sudo systemctl restart vegetables.service ;
+                sudo systemctl restart vegetables.service 
                 '''
                  }
             }
@@ -92,7 +92,7 @@ pipeline {
                 python -m pip install -r requirements.txt;
                 sudo systemctl daemon-reload ;
                 sudo systemctl enable fruits.service ;
-                sudo systemctl restart fruits.service ;
+                sudo systemctl restart fruits.service 
                 '''
                  }
             }
