@@ -8,11 +8,11 @@ pipeline {
     }
 
     parameters {
-        choice {
+        choice(
         name: 'PACKER_AMI',
         choices: ['WEB_AMI', 'JAVA_AMI', 'PYTHON_APP'],
         description: 'Select AMI To Create'
-    }
+    )
 
     }
 
@@ -64,7 +64,7 @@ pipeline {
         }
 
         failed {
-            echo 'AMI build failed'
+            echo 'AMI  failed'
         }
     }
 
