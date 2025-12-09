@@ -68,7 +68,6 @@ pipeline {
                 sudo ls -ltr $WORKSPACE
                 cd ~
                 sudo cp /tmp/vegetables.service /etc/systemd/system/vegetables.service
-                sudo rm -rf fruits-veg_market 
                 git clone https://github.com/techbleat/fruits-veg_market.git 
                 sudo systemctl daemon-reload 
                 sudo systemctl enable vegetables.service 
