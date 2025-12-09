@@ -5,9 +5,6 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials ('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials ('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'us-east-2'
-        WEB_MACHINE_PRIVATE_IP = ''
-        JAVA_INSTANCE_PUBLIC_IP = ''
-        PYTHON_INSTANCE_PUBLIC_IP = ''
     }
 
     parameters {
@@ -20,22 +17,6 @@ pipeline {
     }
 
     stages {
-        stage ('Get target machines ip addresses') {
-        when {
-            expression {params.TF_ACTION == 'GET_TARGET_MACHINES_IP_ADDRESSES'}
-        }
-            steps {
-                sh '''
-               
-
-                
-
-               
-                '''
-            }
-        }
-
-
         stage ('Deploy Web App Nginx') {
         when {
             expression {params.TF_ACTION == 'WEB_APP_NGINX'}
@@ -72,7 +53,7 @@ pipeline {
         }
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
-                sh """
+                sh '''
                 JAVA_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=java-instance" \
                 --query "Reservations[0].Instances[0].PublicIpAddress" \
                 --output text);
@@ -85,7 +66,7 @@ pipeline {
                 sudo systemctl daemon-reload ;
                 sudo systemctl enable vegetables.service ;
                 sudo systemctl restart vegetables.service ;
-                """
+                '''
                  }
             }
 
@@ -97,7 +78,7 @@ pipeline {
         }
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
-                sh """
+                sh '''
                  PYTHON_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
                 --query "Reservations[0].Instances[0].PublicIpAddress" \
                 --output text);
@@ -113,7 +94,7 @@ pipeline {
                 sudo systemctl daemon-reload ;
                 sudo systemctl enable fruits.service ;
                 sudo systemctl restart fruits.service ;
-                """
+                '''
                  }
             }
 
