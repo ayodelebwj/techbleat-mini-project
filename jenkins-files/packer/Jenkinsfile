@@ -36,7 +36,7 @@ pipeline {
             expression {params.TF_ACTION == 'JAVA_AMI'}
         }
             steps {
-                dir ('../../packer-ami/') {
+                dir ('packer-ami') {
                  sh 'ls -ltr'
                  sh 'packer fmt .'
                  sh 'packer validate .'
