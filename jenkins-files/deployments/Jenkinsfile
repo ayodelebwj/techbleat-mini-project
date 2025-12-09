@@ -30,12 +30,12 @@ pipeline {
                 ssh -o StrictHostKeyChecking=no ubuntu@$WEB_INSTANCE_PRIVATE_IP << EOF
                 cd ~ 
                 sudo apt install unzip -y
-                 JAVA_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=java-instance" \
+                 aws ec2 describe-instances --filters "Name=tag:Name,Values=java-instance" \
                 --query "Reservations[0].Instances[0].PublicIpAddress" \
-                --output text) >> python_ip.txt
-                cat python_ip.txt
-                scp python_ip.txt ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/python_ip.txt
+                --output text >> abc_ip.txt
+                cat abc_ip.txt
                 echo "$JAVA_INSTANCE_PUBLIC_IP"
+                scp python_ip.txt ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/python_ip.txt
 
                 PYTHON_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
                 --query "Reservations[0].Instances[0].PublicIpAddress" \
