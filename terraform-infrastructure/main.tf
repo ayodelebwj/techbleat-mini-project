@@ -16,6 +16,9 @@ provider "aws" {
 resource "aws_vpc" "techbleatvpc" {
   cidr_block = "10.0.0.0/16"
 
+  enable_dns_support   = true   # DNS resolution
+  enable_dns_hostnames = true   # DNS hostnames (REQUIRED for RDS)
+
   tags = {
     Name = "techbleatvpc"
   }
@@ -193,16 +196,16 @@ resource "aws_lb_listener" "app_listener_HTTP" {
   }
 }
 
-resource "aws_lb_listener" "app_listener_HTTPS" {
-  load_balancer_arn = aws_lb.app_lb.arn
-  port              = 443
-  protocol          = "HTTPS"
+#resource "aws_lb_listener" "app_listener_HTTPS" {
+#  load_balancer_arn = aws_lb.app_lb.arn
+#  port              = 443
+#  protocol          = "HTTPS"
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.web-app-tg.arn
-  }
-}
+#  default_action {
+#    type             = "forward"
+#    target_group_arn = aws_lb_target_group.web-app-tg.arn
+#  }
+#}
 
 resource "aws_security_group" "web_sg" {
   name        = var.web_machine_security_group_name
