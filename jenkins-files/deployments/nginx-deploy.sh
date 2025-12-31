@@ -40,5 +40,5 @@
                  }
                  {print}
                  ' /etc/nginx/sites-enabled/default > target.new \
-                 && mv target.new /etc/nginx/sites-enabled/default
+                 && sudo mv target.new /etc/nginx/sites-enabled/default
                 fi
