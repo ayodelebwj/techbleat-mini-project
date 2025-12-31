@@ -35,6 +35,10 @@ build {
     inline = [
       "sudo apt update -y",
       "sudo apt install python3 python3-pip python3-venv -y",
+      "sudo apt install unzip -y",
+      "curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip'",
+      "unzip awscliv2.zip",
+      "sudo ./aws/install"
       "exit 0"
     ]
   }
