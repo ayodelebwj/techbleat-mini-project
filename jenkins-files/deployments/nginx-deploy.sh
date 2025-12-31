@@ -9,7 +9,8 @@
                 git clone --branch mini-project --single-branch https://github.com/techbleat/fruits-veg_market.git
                 cd fruits-veg_market/
                 cd frontend/
-                sudo mv /var/www/html/index.nginx-debian.html abc
+                #sudo mv /var/www/html/index.nginx-debian.html abc
+                sudo rm /var/www/html/index.html
                 sudo cp index.html /var/www/html/
                 sudo systemctl daemon-reload
                 sudo sed -i "s|http://localhost:8000/api/products|/api/products|g" /var/www/html/index.html
@@ -27,7 +28,7 @@
                     if (/}/) brace--
                     if (brace==0) copy=0
                 }
-                ' /home/ubuntu/fruit-veg_market/frontend/nginx.conf_sample > /tmp/api_block.conf
+                ' /home/ubuntu/fruits-veg_market/frontend/nginx.conf_sample > /tmp/api_block.conf
 
 
                 if ! grep -q "location /api/" /etc/nginx/sites-enabled/default; then
