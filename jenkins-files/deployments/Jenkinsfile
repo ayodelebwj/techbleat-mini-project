@@ -29,50 +29,12 @@ pipeline {
                 --query "Reservations[0].Instances[0].PrivateIpAddress" \
                 --output text)
 
+
+                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/nginx-deploy.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/nginx-deploy.sh
+
                 ssh -o StrictHostKeyChecking=no ubuntu@$WEB_INSTANCE_PRIVATE_IP << 'EOF'
-                cd ~ 
-                sudo apt install nginx -y 
-                sudo systemctl daemon-reload 
-                sudo systemctl enable nginx 
-                sudo systemctl start nginx 
-                sudo rm -rf fruits-veg_market 
-                cd ~
-                git clone --branch mini-project --single-branch https://github.com/techbleat/fruits-veg_market.git
-                cd fruits-veg_market/
-                cd frontend/
-                sudo mv /var/www/html/index.nginx-debian.html abc
-                sudo cp index.html /var/www/html/
-                sudo systemctl daemon-reload
-                sudo sed -i "s|http://localhost:8000/api/products|/api/products|g" /var/www/html/index.html
-
-                aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" --query "Reservations[0].Instances[0].PrivateIpAddress" --output text >> python_private_ip.txt 
-                read -r PYTHON_PRIVATE_IP < python_private_ip.txt 
-                
-                sudo sed -i "s|http://app-server-IP:8000|http://${PYTHON_PRIVATE_IP}:8000|g" /home/ubuntu/fruit-veg_market/frontend/nginx.conf_sample
-
-                awk '
-                /location \/api\/ {/ {copy=1; brace=1; print; next}
-                copy {
-                    print
-                    if (/{/) brace++
-                    if (/}/) brace--
-                    if (brace==0) copy=0
-                }
-                ' /home/ubuntu/fruit-veg_market/frontend/nginx.conf_sample > /tmp/api_block.conf
-
-
-                if ! grep -q "location /api/" /etc/nginx/sites-enabled/default; then
-                    awk -v block="/tmp/api_block.conf" '
-                    /server {/ && !done {
-                        print
-                        system("cat " block)
-                        done=1
-                        next
-                 }
-                 {print}
-                 ' /etc/nginx/sites-enabled/default > target.new \
-                 && mv target.new /etc/nginx/sites-enabled/default
-                fi
+                sudo chmod nginx-deploy.sh
+                ./nginx-deploy.sh
                 '''
 
                 
@@ -90,30 +52,16 @@ pipeline {
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
                 sh '''
-                 PYTHON_INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
+                 PYTHON_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=python-instance" \
                 --query "Reservations[0].Instances[0].PrivateIpAddress" \
                 --output text)
 
-                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/fruits.service ubuntu@$PYTHON_INSTANCE_PUBLIC_IP:/tmp
+                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/fruits.service ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/tmp/fruits.service
+                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/python-deploy.sh ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/home/ubuntu/python-deploy.sh
 
                 ssh -o StrictHostKeyChecking=no ubuntu@$PYTHON_INSTANCE_PUBLIC_IP << EOF
-                sudo cp /tmp/fruits.service /etc/systemd/system/fruits.service
-                cd ~ 
-                sudo rm -rf fruits-veg_market 
-                git clone --branch mini-project --single-branch https://github.com/techbleat/fruits-veg_market.git
-                cd fruits-veg_market/
-                cd backend-api/
-                sudo apt install python3 python3-pip python3-venv -y
-                python3 -m venv .venv
-                source .venv/bin/activate
-                python -m pip install -r requirements.txt
-                pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv -y
-                aws rds describe-db-instances   --db-instance-identifier my-postgres-db   --query "DBInstances[0].Endpoint.Address"   --output text  >> rds_postgres_databasename.txt
-                read -r RDS_POSTGRES_DATABASENAME < rds_postgres_databasename.txt
-                sudo sed -i "s|postgresql+psycopg://user:pass@db.server:5432/postgres|postgresql+psycopg://username:password@${RDS_POSTGRES_DATABASENAME}:5432/mybd|g" main.py
-                sudo systemctl daemon-reload 
-                sudo systemctl enable fruits.service 
-                sudo systemctl start fruits.service 
+                sudo chmod +x python-deploy.sh
+                ./python-deploy.sh
                 '''
                  }
             }
