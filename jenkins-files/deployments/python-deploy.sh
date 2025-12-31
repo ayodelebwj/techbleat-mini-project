@@ -9,7 +9,7 @@
                 python3 -m venv .venv
                 source .venv/bin/activate
                 python -m pip install -r requirements.txt
-                pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv -y
+                pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv
                 aws rds describe-db-instances   --db-instance-identifier my-postgres-db   --query "DBInstances[0].Endpoint.Address"   --output text  >> rds_postgres_databasename.txt
                 read -r RDS_POSTGRES_DATABASENAME < rds_postgres_databasename.txt
                 sudo sed -i "s|postgresql+psycopg://user:pass@db.server:5432/postgres|postgresql+psycopg://username:password@${RDS_POSTGRES_DATABASENAME}:5432/mybd|g" main.py
