@@ -9,7 +9,7 @@
                 git clone --branch mini-project --single-branch https://github.com/techbleat/fruits-veg_market.git
                 cd fruits-veg_market/
                 cd frontend/
-               # sudo mv /var/www/html/index.nginx-debian.html abc
+                sudo mv /var/www/html/index.nginx-debian.html abc
                 sudo rm /var/www/html/index.html
                 sudo cp index.html /var/www/html/
                 sudo systemctl daemon-reload
@@ -44,6 +44,12 @@
                  && sudo mv target.new /etc/nginx/sites-enabled/default
                 fi
 
+              
                 sysctl net.ipv6.bindv6only
                 sudo systemctl daemon-reload
                 sudo systemctl restart nginx
+
+
+                cd ~
+                sudo chmod +x namecheap-ddns.sh
+                ./namecheap-ddns.sh
