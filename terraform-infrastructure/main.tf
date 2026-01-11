@@ -16,8 +16,8 @@ provider "aws" {
 resource "aws_vpc" "techbleatvpc" {
   cidr_block = "10.0.0.0/16"
 
-  enable_dns_support   = true   # DNS resolution
-  enable_dns_hostnames = true   # DNS hostnames (REQUIRED for RDS)
+  enable_dns_support   = true # DNS resolution
+  enable_dns_hostnames = true # DNS hostnames (REQUIRED for RDS)
 
   tags = {
     Name = "techbleatvpc"
@@ -182,7 +182,7 @@ resource "aws_lb_target_group_attachment" "tg-registered-targets" {
   target_group_arn = aws_lb_target_group.web-app-tg.arn
   target_id        = aws_instance.web_instance.id
   port             = 80
-  depends_on = [aws_instance.web_instance]
+  depends_on       = [aws_instance.web_instance]
 }
 
 resource "aws_lb_listener" "app_listener_HTTP" {
@@ -221,20 +221,20 @@ resource "aws_security_group" "web_sg" {
   }
 
   ingress {
-    description     = "HTTP PORT"
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
+    description = "HTTP PORT"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     #security_groups = [aws_security_group.alb_sg.id]
-    cidr_blocks = [var.security_group_cidr_block] 
+    cidr_blocks = [var.security_group_cidr_block]
 
   }
 
   ingress {
-    description     = "HTTPS PORT"
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
+    description = "HTTPS PORT"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = [var.security_group_cidr_block]
     #security_groups = [aws_security_group.alb_sg.id]
   }
@@ -263,8 +263,8 @@ resource "aws_security_group" "python_sg" {
 
   ingress {
     description     = "PYTHON PORT"
-    from_port       = var.python_machine_ingress_port 
-    to_port         = var.python_machine_ingress_port 
+    from_port       = var.python_machine_ingress_port
+    to_port         = var.python_machine_ingress_port
     protocol        = "tcp"
     security_groups = [aws_security_group.web_sg.id]
   }
@@ -323,12 +323,12 @@ data "aws_iam_instance_profile" "web-server-role" {
 
 # CREATE Python instance
 resource "aws_instance" "python_instance" {
-  ami                     = data.aws_ami.python-ami.id
-  instance_type           = var.python_machine_instance_type
-  key_name                = var.python_machine_key_name
-  security_groups         = [aws_security_group.python_sg.id]
-  subnet_id               = aws_subnet.private_1.id
-  iam_instance_profile    = data.aws_iam_instance_profile.web-server-role.name
+  ami                  = data.aws_ami.python-ami.id
+  instance_type        = var.python_machine_instance_type
+  key_name             = var.python_machine_key_name
+  security_groups      = [aws_security_group.python_sg.id]
+  subnet_id            = aws_subnet.private_1.id
+  iam_instance_profile = data.aws_iam_instance_profile.web-server-role.name
 
 
   tags = {
@@ -338,12 +338,12 @@ resource "aws_instance" "python_instance" {
 
 # CREATE Web instance
 resource "aws_instance" "web_instance" {
-  ami                     = data.aws_ami.web-ami.id
-  instance_type           = var.web_machine_instance_type
-  key_name                = var.web_machine_key_name
-  security_groups         = [aws_security_group.web_sg.id]
-  iam_instance_profile    = data.aws_iam_instance_profile.web-server-role.name
-  subnet_id               = aws_subnet.public_1.id
+  ami                  = data.aws_ami.web-ami.id
+  instance_type        = var.web_machine_instance_type
+  key_name             = var.web_machine_key_name
+  security_groups      = [aws_security_group.web_sg.id]
+  iam_instance_profile = data.aws_iam_instance_profile.web-server-role.name
+  subnet_id            = aws_subnet.public_1.id
 
   tags = {
     Name = var.web_machine_tag_name
@@ -351,7 +351,7 @@ resource "aws_instance" "web_instance" {
 }
 
 resource "aws_db_subnet_group" "postgres_subnet_group" {
-  name       = "postgres-subnet-group"
+  name = "postgres-subnet-group"
   subnet_ids = [
     aws_subnet.private_1.id,
     aws_subnet.private_2.id
@@ -364,11 +364,12 @@ resource "aws_db_subnet_group" "postgres_subnet_group" {
 
 # RDS instance
 resource "aws_db_instance" "postgres" {
-  identifier     = "my-postgres-db"
-  engine         = var.db_engine
-  engine_version = var.db_engine_version
-  instance_class = var.db_instance_class
-  allocated_storage = 20
+  identifier                 = "my-postgres-db"
+  engine                     = "postgres" //var.db_engine
+  engine_version             = var.db_engine_version
+  instance_class             = var.db_instance_class
+  auto_minor_version_upgrade = true
+  allocated_storage          = 20
 
   db_name  = var.db_name
   username = var.db_username
@@ -382,5 +383,79 @@ resource "aws_db_instance" "postgres" {
 
   tags = {
     Environment = var.db_environment
+  }
+}
+
+
+
+#======================================================================
+#JENKINS SG RESOURCE BLOCK TO ALLOW PORTS 22 AND 8080
+#======================================================================
+# Jenkins Security group resource block to allow SSH and TCP port 8080
+resource "aws_security_group" "jenkins_sg" {
+  name        = var.security_group_name
+  vpc_id      = aws_vpc.techbleatvpc.id
+  description = "Allow SSH and HTTP"
+
+  ingress {
+    description = "SSH"
+    from_port   = var.security_group_ingress_ssh_port
+    to_port     = var.security_group_ingress_ssh_port
+    protocol    = "tcp"
+    cidr_blocks = [var.security_group_cidr_block]
+  }
+
+  ingress {
+    description = "JENKINS PORT"
+    from_port   = var.security_group_ingress_jenkins_port
+    to_port     = var.security_group_ingress_jenkins_port
+    protocol    = "tcp"
+    cidr_blocks = [var.security_group_cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.security_group_cidr_block]
+  }
+}
+
+#======================================================================
+#RETRIEVES UBUNTU AMI FROM AWS STORE TO PROVISION JENKINS INSTANCE
+#======================================================================
+#Retrieves ubuntu ami from AWS store to provision Jenkins instance
+data "aws_ssm_parameter" "ubuntu_2404_ami" {
+  name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
+}
+
+#==========================================================================
+#FILTERS UBUNTU AMI ID FROM SSM PARAMETER FOR JENKINS INSTANCE PROVISIONING
+#==========================================================================
+data "aws_ami" "ubuntu_2404" {
+  owners      = ["099720109477"]
+  most_recent = true
+
+  filter {
+    name   = "image-id"
+    values = [data.aws_ssm_parameter.ubuntu_2404_ami.value]
+  }
+}
+
+#======================================================
+#JENKINS SERVER EC2 RESOURCE BLOCK
+#======================================================
+resource "aws_instance" "jenkins_instance" {
+  ami                  = data.aws_ami.ubuntu_2404.id
+  instance_type        = var.jenkins_server_instance_type
+  key_name             = var.jenkins_server_key_name
+  security_groups      = [aws_security_group.jenkins_sg.id]
+  iam_instance_profile = data.aws_iam_instance_profile.web-server-role.name
+  subnet_id            = aws_subnet.public_1.id
+
+  user_data = file("./jenkinsimportantbinaries.sh")
+
+  tags = {
+    Name = var.jenkins_server_tag_name
   }
 }

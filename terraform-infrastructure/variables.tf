@@ -72,6 +72,7 @@ variable "db_identifier" {
 }
 
 variable "db_engine" {
+  type    = string
   default = ""
 }
 
@@ -111,6 +112,42 @@ variable "db_sg_ingress_to_port" {
   default = ""
 }
 
- variable "db_instance_class" {
-    default = ""
- } 
+variable "db_instance_class" {
+  default = ""
+}
+
+
+
+
+
+
+variable "security_group_name" {
+  type    = string
+  default = "jenkins-sg"
+}
+
+variable "security_group_ingress_ssh_port" {
+  type    = number
+  default = 22
+}
+
+variable "security_group_ingress_jenkins_port" {
+  type    = number
+  default = 8080
+}
+
+
+variable "jenkins_server_instance_type" {
+  type    = string
+  default = "c7i-flex.large"
+}
+
+variable "jenkins_server_key_name" {
+  type    = string
+  default = "ohio-kp"
+}
+
+variable "jenkins_server_tag_name" {
+  type    = string
+  default = "jenkins-instance"
+}

@@ -29,7 +29,8 @@ variable "jenkins_server_instance_type" {
 }
 
 variable "jenkins_server_key_name" {
-  type = string
+  type    = string
+  default = "ohio-kp"
 }
 
 variable "jenkins_server_tag_name" {
