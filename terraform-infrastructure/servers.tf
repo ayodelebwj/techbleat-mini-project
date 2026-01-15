@@ -18,7 +18,7 @@
  # ami                  = data.aws_ami.web-ami.id
  # instance_type        = var.web_machine_instance_type
  # key_name             = var.web_machine_key_name
- 3 security_groups      = [aws_security_group.public_asg_sg.id]
+ # security_groups      = [aws_security_group.public_asg_sg.id]
 # iam_instance_profile = data.aws_iam_instance_profile.web-server-role.name
  # subnet_id            = aws_subnet.public_1.id
 
