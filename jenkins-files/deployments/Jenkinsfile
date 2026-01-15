@@ -5,6 +5,8 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials ('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials ('aws-secret-access-key')
         AWS_DEFAULT_REGION = 'us-east-2'
+        WEB_TAG = 'web'
+        APP_TAG = 'app'
     }
 
     parameters {
@@ -30,20 +32,40 @@ pipeline {
                 --filters "Name=tag:Name,Values=web-instance" \
                 --query 'Reservations[].Instances[].PrivateIpAddress | [0]' \
                 --output text)
+
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/nginx-deploy.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/nginx-deploy.sh
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/namecheap-ddns.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/namecheap-ddns.sh
                 ssh -o StrictHostKeyChecking=no ubuntu@$WEB_INSTANCE_PRIVATE_IP << 'EOF'
-                sudo chmod +x nginx-deploy.sh
-                ./nginx-deploy.sh
+                
                 '''
                  }
+            }
+        }
+
+        stage ('Deploy Web App') {
+            steps {
+            sh '''
+                    echo "Deploying to public instances..."
+                    INSTANCE_IDS=$(aws ec2 describe-instances \
+                        --filters "Name=tag:Role,Values=${WEB_TAG}" "Name=instance-state-name,Values=running" \
+                        --query "Reservations[].Instances[].InstanceId" \
+                        --region ${AWS_DEFAULT_REGION} \
+                        --output text)
+                    
+                    aws ssm send-command \
+                        --targets $(echo $INSTANCE_IDS | sed 's/[^ ]*/Key=InstanceIds,Values=&/g' | sed 's/ / /g') \
+                        --document-name "AWS-RunShellScript" \
+                        --comment "Deploy to web tier" \
+                        --parameters 'commands=["sudo chmod +x nginx-deploy.sh", "./nginx-deploy.sh"]' \
+                        --region ${AWS_DEFAULT_REGION}
+                '''
             }
         }
 
         // This stage fetches python app server public ip, ssh into it, copies python service 
         // file into it and activate important binaries. it then clones the repo and starts 
         // the python app server    
-        stage ('Deploy Python App') {
+        stage ('Copy files to Backend Server') {
         when {
             expression {params.TF_ACTION == 'DEPLOY_PYTHON_APP'}
         }
@@ -55,14 +77,30 @@ pipeline {
                 --query "Reservations[].Instances[].PrivateIpAddress" \
                 --output text)
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/fruits.service ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/tmp/fruits.service
-                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/python-deploy.sh ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/home/ubuntu/python-deploy.sh
-                ssh -o StrictHostKeyChecking=no ubuntu@$PYTHON_INSTANCE_PRIVATE_IP << EOF
-                sudo chmod +x python-deploy.sh
-                ./python-deploy.sh
-                '''
+                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/python-deploy.sh ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/home/ubuntu/python-deploy.sh                '''
                  }
             }
 
+        }
+    }
+
+    stage ('Deploy App to Backend Server') {
+        steps {
+        sh '''
+                    echo "Deploying to private instances..."
+                    INSTANCE_IDS=$(aws ec2 describe-instances \
+                        --filters "Name=tag:Role,Values=${APP_TAG}" "Name=instance-state-name,Values=running" \
+                        --query "Reservations[].Instances[].InstanceId" \
+                        --region ${AWS_DEFAULT_REGION} \
+                        --output text)
+                    
+                    aws ssm send-command \
+                        --targets $(echo $INSTANCE_IDS | sed 's/[^ ]*/Key=InstanceIds,Values=&/g' | sed 's/ / /g') \
+                        --document-name "AWS-RunShellScript" \
+                        --comment "Deploy to app tier" \
+                        --parameters 'commands=["sudo chmod +x python-deploy.sh", "./python-deploy.sh"]' \
+                        --region ${AWS_DEFAULT_REGION}
+                '''
         }
     }
 
