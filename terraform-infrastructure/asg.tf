@@ -3,15 +3,15 @@ resource "aws_launch_template" "public_lt" {
   image_id               = data.aws_ami.web-ami.id
   instance_type          = "t3.micro"
   vpc_security_group_ids = [aws_security_group.public_asg_sg.id]
-  key_name             = var.web_machine_key_name
-  
-    iam_instance_profile {
+  key_name               = var.web_machine_key_name
+
+  iam_instance_profile {
     name = data.aws_iam_instance_profile.web-server-role.name
   }
-      tags = {
-      Role        = "web"
-      Environment = "dev"
-    }
+  tags = {
+    Role        = "web"
+    Environment = "dev"
+  }
 
 }
 
@@ -20,15 +20,15 @@ resource "aws_launch_template" "private_lt" {
   image_id               = data.aws_ami.python-ami.id
   instance_type          = "t3.micro"
   vpc_security_group_ids = [aws_security_group.private_asg_sg.id]
-  key_name             = var.python_machine_key_name
+  key_name               = var.python_machine_key_name
 
- iam_instance_profile {
+  iam_instance_profile {
     name = data.aws_iam_instance_profile.web-server-role.name
   }
-    tags = {
+  tags = {
     Role        = "app"
     Environment = "dev"
-    }
+  }
 }
 
 resource "aws_autoscaling_group" "public_asg" {

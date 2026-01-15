@@ -33,14 +33,14 @@ build {
     inline_shebang = "/bin/bash -xe"
     inline = [
       "sudo apt update -y",
+      "sudo snap install amazon-ssm-agent --classic",
+      "sudo systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service",
+      "sudo systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service",
       "sudo apt install certbot python3-certbot-nginx -y",
       "sudo apt install unzip -y",
       "curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip'",
       "unzip awscliv2.zip",
-      "sudo ./aws/install",
-      "sudo apt install -y amazon-ssm-agent",
-      "sudo systemctl enable amazon-ssm-agent",
-      "sudo systemctl start amazon-ssm-agent"
+      "sudo ./aws/install"
     ]
   }
 }
