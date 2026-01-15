@@ -4,8 +4,10 @@ resource "aws_launch_template" "public_lt" {
   instance_type          = "t3.micro"
   vpc_security_group_ids = [aws_security_group.public_asg_sg.id]
   key_name             = var.web_machine_key_name
-
-
+  
+    iam_instance_profile {
+    name = data.aws_iam_instance_profile.web-server-role.name
+  }
       tags = {
       Role        = "web"
       Environment = "dev"
@@ -20,10 +22,12 @@ resource "aws_launch_template" "private_lt" {
   vpc_security_group_ids = [aws_security_group.private_asg_sg.id]
   key_name             = var.python_machine_key_name
 
-
-        tags = {
-      Role        = "app"
-      Environment = "dev"
+ iam_instance_profile {
+    name = data.aws_iam_instance_profile.web-server-role.name
+  }
+    tags = {
+    Role        = "app"
+    Environment = "dev"
     }
 }
 
