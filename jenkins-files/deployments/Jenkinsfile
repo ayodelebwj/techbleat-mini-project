@@ -82,7 +82,6 @@ pipeline {
             }
 
         }
-    }
 
     stage ('Deploy App to Backend Server') {
         steps {
