@@ -27,16 +27,18 @@ pipeline {
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
                 sh '''
-                TARG_GRP_ARN=$(aws elbv2 describe-target-groups --names public-tg)                
+              WEB_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances \
+                --instance-ids $(aws elbv2 describe-target-health \
+                      --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/web-tg/abcd1234 \
+                      --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id' \
+                      --output text | awk '{print $1}') \
+                      --query 'Reservations[0].Instances[0].PrivateIpAddress' \
+                      --output text)
 
-                TARG_GRP_EC2_IP=$(aws elbv2 describe-target-health \
-                --target-group-arn ${TARG_GRP_ARN} \
-                --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id' \
-                --output text)
 
 
                 
-                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/nginx-deploy.sh ubuntu@$TARG_GRP_EC2_IP:/home/ubuntu/nginx-deploy.sh
+                scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/nginx-deploy.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/nginx-deploy.sh
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/namecheap-ddns.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/namecheap-ddns.sh                
                 '''
                  }
