@@ -144,7 +144,7 @@ variable "jenkins_server_instance_type" {
 
 variable "jenkins_server_key_name" {
   type    = string
-  default = "ohio-kp"
+  default = "deledele"
 }
 
 variable "jenkins_server_tag_name" {
