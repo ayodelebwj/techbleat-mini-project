@@ -32,8 +32,8 @@ resource "aws_launch_template" "private_lt" {
 }
 
 resource "aws_autoscaling_group" "public_asg" {
-  desired_capacity    = 2
-  max_size            = 4
+  desired_capacity    = 1
+  max_size            = 2
   min_size            = 1
   vpc_zone_identifier = [aws_subnet.public_1.id, aws_subnet.public_2.id]
 
@@ -46,8 +46,8 @@ resource "aws_autoscaling_group" "public_asg" {
 }
 
 resource "aws_autoscaling_group" "private_asg" {
-  desired_capacity    = 2
-  max_size            = 4
+  desired_capacity    = 1
+  max_size            = 2
   min_size            = 1
   vpc_zone_identifier = [aws_subnet.private_1.id, aws_subnet.private_2.id]
 
