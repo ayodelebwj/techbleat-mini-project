@@ -15,7 +15,7 @@ python_machine_ingress_port = 8000
 
 python_machine_instance_type = "t3.micro"
 
-python_machine_key_name = "ohio-kp"
+python_machine_key_name = "deledele"
 
 python_machine_tag_name = "python-instance"
 
@@ -26,7 +26,7 @@ web_machine_security_group_name = "web-sg"
 
 web_machine_instance_type = "t3.micro"
 
-web_machine_key_name = "ohio-kp"
+web_machine_key_name = "deledele"
 
 web_machine_tag_name = "web-instance"
 
