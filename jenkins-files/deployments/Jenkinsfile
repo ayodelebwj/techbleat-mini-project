@@ -102,7 +102,7 @@ pipeline {
                 '''
         }
     }
-
+    }
     post {
         success {
             echo 'App deployed successfully'
@@ -112,5 +112,4 @@ pipeline {
             echo 'App deployment failed'
         }
     }
-}
 }
