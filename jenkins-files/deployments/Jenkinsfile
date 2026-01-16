@@ -27,7 +27,11 @@ pipeline {
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
                 sh '''
-                WEB_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=web-instance" "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].PrivateIpAddress | [0]" --output text)
+WEB_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=web-instance" "Name=instance-state-name,Values=running" \
+  --query "Reservations[].Instances[].PrivateIpAddress | [0]" \
+  --output text)                
+                
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/nginx-deploy.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/nginx-deploy.sh
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/namecheap-ddns.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/namecheap-ddns.sh                
                 '''
