@@ -12,15 +12,15 @@ pipeline {
     parameters {
         choice(
         name: 'TF_ACTION',
-        choices: ['DEPLOY_PYTHON_APP', 'DEPLOY_NGINX_WEB_APP'],
+        choices: ['COPY_NGINX_FILES', 'COPY_PYTHON_FILES', 'DEPLOY_PYTHON_APP', 'DEPLOY_NGINX_WEB_APP'],
         description: 'Select Action To Perform'
       )
     }
 
     stages {
-        stage ('Deploy Web App Nginx') {
+        stage ('Copy nginx files') {
         when {
-            expression {params.TF_ACTION == 'DEPLOY_NGINX_WEB_APP'}
+            expression {params.TF_ACTION == 'COPY_NGINX_FILES'}
         }
             // This step fetches web server private ip installs and starts nginx fetches public ip
             // of python app server and sed command it into index.html file      
@@ -43,6 +43,9 @@ pipeline {
         }
 
         stage ('Deploy Web App') {
+            when {
+            expression {params.TF_ACTION == 'DEPLOY_NGINX_WEB_APP'}
+        }
             steps {
             sh '''
                     echo "Deploying to public instances..."
@@ -67,7 +70,7 @@ pipeline {
         // the python app server    
         stage ('Copy files to Backend Server') {
         when {
-            expression {params.TF_ACTION == 'DEPLOY_PYTHON_APP'}
+            expression {params.TF_ACTION == 'COPY_PYTHON_FILES'}
         }
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
@@ -84,6 +87,9 @@ pipeline {
         }
 
     stage ('Deploy App to Backend Server') {
+          when {
+            expression {params.TF_ACTION == 'DEPLOY_PYTHON_APP'}
+        }
         steps {
         sh '''
                     echo "Deploying to private instances..."
