@@ -29,7 +29,7 @@ pipeline {
                 sh '''
                 WEB_INSTANCE_PRIVATE_IP=$(
                 aws ec2 describe-instances \
-                --filters "Name=tag:Name,Values=web-instance" \
+                --filters "Name=tag:Role,Values=web" \
                 --query 'Reservations[].Instances[].PrivateIpAddress | [0]' \
                 --output text)
 
