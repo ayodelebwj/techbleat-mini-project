@@ -37,6 +37,7 @@ pipeline {
                 
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/nginx-deploy.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/nginx-deploy.sh
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/namecheap-ddns.sh ubuntu@$WEB_INSTANCE_PRIVATE_IP:/home/ubuntu/namecheap-ddns.sh                
+                
                 '''
                  }
             }
@@ -54,7 +55,18 @@ pipeline {
                         --query "Reservations[].Instances[].InstanceId" \
                         --region ${AWS_DEFAULT_REGION} \
                         --output text)
-                    
+
+
+                    aws ssm send-command \
+                         --instance-ids "$INSTANCE_ID" \
+                         --document-name "AWS-RunShellScript" \
+                         --comment "Deploy to web tier" \
+                         --parameters commands="[
+                         \"sudo chmod +x /home/ubuntu/nginx-deploy.sh\",
+                         \"/home/ubuntu/nginx-deploy.sh\"
+                         ]" \
+                         --region ${AWS_DEFAULT_REGION}
+  
                     aws ssm send-command \
                         --targets $(echo $INSTANCE_IDS | sed 's/[^ ]*/Key=InstanceIds,Values=&/g' | sed 's/ / /g') \
                         --document-name "AWS-RunShellScript" \
@@ -86,7 +98,7 @@ pipeline {
                 
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/fruits.service ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/tmp/fruits.service
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/python-deploy.sh ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/home/ubuntu/python-deploy.sh 
-                 '''
+                '''
                  }
             }
 
@@ -98,19 +110,33 @@ pipeline {
         }
         steps {
         sh '''
-                    echo "Deploying to private instances..."
-                    INSTANCE_IDS=$(aws ec2 describe-instances \
-                        --filters "Name=tag:Role,Values=${APP_TAG}" "Name=instance-state-name,Values=running" \
-                        --query "Reservations[].Instances[].InstanceId" \
-                        --region ${AWS_DEFAULT_REGION} \
-                        --output text)
+                    INSTANCE_ID=$(aws elbv2 describe-target-health \
+                    --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/private-tg/d9960bdf046182d7 \
+                    --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id | [0]' \
+                    --output text)
+
+                    if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" = "None" ]; then
+                    echo "ERROR: No healthy instances found in target group"
+                    exit 1
+                    fi
+
+    echo "Using instance: $INSTANCE_ID"
                     
+
+
                     aws ssm send-command \
-                        --targets $(echo $INSTANCE_IDS | sed 's/[^ ]*/Key=InstanceIds,Values=&/g' | sed 's/ / /g') \
-                        --document-name "AWS-RunShellScript" \
-                        --comment "Deploy to app tier" \
-                        --parameters 'commands=["sudo chmod +x python-deploy.sh", "./python-deploy.sh"]' \
-                        --region ${AWS_DEFAULT_REGION}
+                         --instance-ids "$INSTANCE_ID" \
+                         --document-name "AWS-RunShellScript" \
+                         --comment "Deploy to web tier" \
+                         --parameters commands="[
+                         \"sudo chmod +x /home/ubuntu/python-deploy.sh\",
+                         \"/home/ubuntu/python-deploy.sh\"
+                         ]" \
+                         --region ${AWS_DEFAULT_REGION}
+
+
+
+
                 '''
         }
     }
