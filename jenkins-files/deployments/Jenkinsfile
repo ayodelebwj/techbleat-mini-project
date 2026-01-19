@@ -75,13 +75,18 @@ pipeline {
             steps {
                  sshagent (credentials: ['AWS-SSH-KEY']) {
                 sh '''
+
                 PYTHON_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances \
-                --filters "Name=tag:Name,Values=python-instance" \
-                --query "Reservations[].Instances[].PrivateIpAddress" \
-                --output text)
+                --instance-ids $(aws elbv2 describe-target-health \
+                      --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/private-tg/d9960bdf046182d7 \
+                      --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id' \
+                      --output text | awk '{print $1}') \
+                      --query 'Reservations[0].Instances[0].PrivateIpAddress' \
+                      --output text)
+                
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/fruits.service ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/tmp/fruits.service
                 scp -o StrictHostKeyChecking=no $WORKSPACE/jenkins-files/deployments/python-deploy.sh ubuntu@$PYTHON_INSTANCE_PRIVATE_IP:/home/ubuntu/python-deploy.sh 
-                '''
+                 '''
                  }
             }
 
