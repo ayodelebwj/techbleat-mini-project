@@ -59,13 +59,6 @@ resource "aws_security_group" "public_asg_sg" {
   vpc_id = aws_vpc.techbleatvpc.id
 
   ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jenkins_sg.id]
-  }
-
-  ingress {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
@@ -105,6 +98,13 @@ resource "aws_security_group" "internal_alb_sg" {
     security_groups = [aws_security_group.public_asg_sg.id]
   }
 
+  ingress {
+    from_port       = 8000
+    to_port         = 8000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.public_asg_sg.id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -117,12 +117,6 @@ resource "aws_security_group" "private_asg_sg" {
   name   = "private-asg-sg"
   vpc_id = aws_vpc.techbleatvpc.id
 
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.jenkins_sg.id]
-  }
 
   ingress {
     from_port       = 80
@@ -134,6 +128,13 @@ resource "aws_security_group" "private_asg_sg" {
   ingress {
     from_port       = 443
     to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.internal_alb_sg.id]
+  }
+
+   ingress {
+    from_port       = 8000
+    to_port         = 8000
     protocol        = "tcp"
     security_groups = [aws_security_group.internal_alb_sg.id]
   }

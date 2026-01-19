@@ -16,22 +16,22 @@ resource "aws_lb" "internal_alb" {
 
 resource "aws_lb_target_group" "public_tg" {
   name     = "public-tg"
-  port     = 80
-  protocol = "HTTP"
+  port     = 443
+  protocol = "HTTPS"
   vpc_id   = aws_vpc.techbleatvpc.id
 }
 
 resource "aws_lb_target_group" "private_tg" {
   name     = "private-tg"
-  port     = 80
+  port     = 8000
   protocol = "HTTP"
   vpc_id   = aws_vpc.techbleatvpc.id
 }
 
 resource "aws_lb_listener" "public_listener" {
   load_balancer_arn = aws_lb.public_alb.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
 
   default_action {
     type             = "forward"
@@ -41,8 +41,8 @@ resource "aws_lb_listener" "public_listener" {
 
 resource "aws_lb_listener" "internal_listener" {
   load_balancer_arn = aws_lb.internal_alb.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
 
   default_action {
     type             = "forward"
