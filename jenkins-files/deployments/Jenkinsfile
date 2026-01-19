@@ -29,7 +29,7 @@ pipeline {
                 sh '''
               WEB_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances \
                 --instance-ids $(aws elbv2 describe-target-health \
-                      --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/public-tg/6a8c122b802f3972 \
+                      --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/public-tg/af15d2ac20a062bf \
                       --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id' \
                       --output text | awk '{print $1}') \
                       --query 'Reservations[0].Instances[0].PrivateIpAddress' \
@@ -50,7 +50,7 @@ pipeline {
             steps {
             sh '''
                     INSTANCE_ID=$(aws elbv2 describe-target-health \
-                    --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/public-tg/6a8c122b802f3972 \
+                    --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/public-tg/af15d2ac20a062bf \
                     --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id | [0]' \
                     --output text)
 
@@ -87,7 +87,7 @@ pipeline {
 
                 PYTHON_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances \
                 --instance-ids $(aws elbv2 describe-target-health \
-                      --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/private-tg/d9960bdf046182d7 \
+                      --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/private-tg/99f310f0194d069c \
                       --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id' \
                       --output text | awk '{print $1}') \
                       --query 'Reservations[0].Instances[0].PrivateIpAddress' \
@@ -108,7 +108,7 @@ pipeline {
         steps {
         sh '''
                     INSTANCE_ID=$(aws elbv2 describe-target-health \
-                    --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/private-tg/d9960bdf046182d7 \
+                    --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/private-tg/99f310f0194d069c \
                     --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id | [0]' \
                     --output text)
 

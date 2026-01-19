@@ -15,7 +15,7 @@ resource "aws_lb" "internal_alb" {
 }
 
 resource "aws_lb_target_group" "public_tg" {
-  name     = "public-tg"
+  name        = "public-tg"
   port        = 443
   protocol    = "HTTPS"
   vpc_id      = aws_vpc.techbleatvpc.id
@@ -34,7 +34,7 @@ resource "aws_lb_target_group" "public_tg" {
 }
 
 resource "aws_lb_target_group" "private_tg" {
-  name     = "private-tg"
+  name        = "private-tg"
   port        = 8000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.techbleatvpc.id
@@ -61,8 +61,8 @@ resource "aws_lb_listener" "public_listener" {
     type = "redirect"
 
     redirect {
-      protocol = "HTTPS"
-      port     = "443"
+      protocol    = "HTTPS"
+      port        = "443"
       status_code = "HTTP_301"
     }
   }
@@ -77,33 +77,33 @@ resource "aws_lb_listener" "internal_listener" {
     type = "redirect"
 
     redirect {
-      protocol = "HTTPS"
-      port     = "443"
+      protocol    = "HTTPS"
+      port        = "443"
       status_code = "HTTP_301"
     }
   }
 }
 
-resource "aws_lb_listener" "internal_https_listener" {
-  load_balancer_arn = aws_lb.internal_alb.arn
-  port              = 443
-  protocol          = "HTTPS"
-  certificate_arn   = aws_acm_certificate.internal_cert.arn
+//resource "aws_lb_listener" "internal_https_listener" {
+// load_balancer_arn = aws_lb.internal_alb.arn
+//port              = 443
+//protocol          = "HTTPS"
+//certificate_arn   = aws_acm_certificate.internal_cert.arn
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app_tg.arn
-  }
-}
+//default_action {
+// type             = "forward"
+// target_group_arn = aws_lb_target_group.private_tg.arn
+//}
+//}
 
-resource "aws_lb_listener" "public_https_listener" {
-  load_balancer_arn = aws_lb.public_alb.arn
-  port              = 443
-  protocol          = "HTTPS"
-  certificate_arn   = aws_acm_certificate.web_cert.arn
+//resource "aws_lb_listener" "public_https_listener" {
+// load_balancer_arn = aws_lb.public_alb.arn
+// port              = 443
+// protocol          = "HTTPS"
+//certificate_arn   = aws_acm_certificate.web_cert.arn
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.web_tg.arn
-  }
-}
+// default_action {
+//  type             = "forward"
+// target_group_arn = aws_lb_target_group.public_tg.arn
+// }
+//}
