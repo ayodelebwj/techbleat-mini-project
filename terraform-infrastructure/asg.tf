@@ -9,7 +9,7 @@ resource "aws_launch_template" "public_lt" {
     name = data.aws_iam_instance_profile.web-server-role.name
   }
   tags = {
-    Name = "web-instance"
+    Name        = "web-instance"
     Role        = "web"
     Environment = "dev"
   }
@@ -27,7 +27,7 @@ resource "aws_launch_template" "private_lt" {
     name = data.aws_iam_instance_profile.web-server-role.name
   }
   tags = {
-    Name = "python-instance"
+    Name        = "python-instance"
     Role        = "app"
     Environment = "dev"
   }
