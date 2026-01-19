@@ -29,7 +29,7 @@ pipeline {
                 sh '''
               WEB_INSTANCE_PRIVATE_IP=$(aws ec2 describe-instances \
                 --instance-ids $(aws elbv2 describe-target-health \
-                      --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:loadbalancer/app/public-alb/c47ab88afe0174ba \
+                      --target-group-arn arn:aws:elasticloadbalancing:us-east-2:568298704568:targetgroup/public-tg/6a8c122b802f3972 \
                       --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id' \
                       --output text | awk '{print $1}') \
                       --query 'Reservations[0].Instances[0].PrivateIpAddress' \
