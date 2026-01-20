@@ -125,7 +125,7 @@ resource "aws_security_group" "internal_alb_sg" {
   //  to_port         = 8000
   //  protocol        = "tcp"
   //  security_groups = [aws_security_group.public_asg_sg.id]
- // }
+  // }
 
   egress {
     from_port   = 0
@@ -148,17 +148,17 @@ resource "aws_security_group" "private_asg_sg" {
   }
 
   //ingress {
-   // from_port       = 8080
-   // to_port         = 8080
-   // protocol        = "tcp"
-   // security_groups = [aws_security_group.internal_alb_sg.id]
+  // from_port       = 8080
+  // to_port         = 8080
+  // protocol        = "tcp"
+  // security_groups = [aws_security_group.internal_alb_sg.id]
   //}
 
   //ingress {
   //  from_port       = 443
-   // to_port         = 443
-   // protocol        = "tcp"
-   // security_groups = [aws_security_group.internal_alb_sg.id]
+  // to_port         = 443
+  // protocol        = "tcp"
+  // security_groups = [aws_security_group.internal_alb_sg.id]
   //}
 
   ingress {
