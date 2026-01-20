@@ -1,5 +1,7 @@
 #!/bin/bash
 aws ssm start-session \
-  --target i-070004020715cd7b6 \
+  --target i-017e82d7731eec2d8 \
   --document-name AWS-StartPortForwardingSession \
   --parameters '{"portNumber":["8080"],"localPortNumber":["8080"]}'
+
+
